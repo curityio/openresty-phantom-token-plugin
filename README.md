@@ -37,10 +37,11 @@ location ~ ^/ {
         phantomTokenPlugin.execute(config)
     }
 }
+```
 
 ## Documentation
 
-This repository is documented in the [LUA API Gateway Integration](https://curity.io/resources/learn/lua-nginx-integration/) article on the Curity Web Site.
+See the [NGINX LUA Integration](https://curity.io/resources/learn/lua-nginx-integration/) article on the Curity Web Site.
 
 ## More Information
 
