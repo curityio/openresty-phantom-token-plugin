@@ -4,7 +4,7 @@
 [![Availability](https://img.shields.io/badge/availability-source-blue)](https://curity.io/resources/code-examples/status/)
 
 A plugin to demonstrate how to implement the [Phantom Token Pattern](https://curity.io/resources/learn/phantom-token-pattern/) via LUA.\
-This enables a secure API solution when integrating with the OpenResty version of NGINX.
+This enables the pattern to be used with OpenResty or NGINX systems using the [NGINX LUA module](https://www.nginx.com/resources/wiki/modules/lua/).
 
 ## Documentation
 
