@@ -1,4 +1,4 @@
-# OpenResty Phantom Token Plugin
+# LUA Phantom Token Plugin
 
 [![Quality](https://img.shields.io/badge/quality-experiment-red)](https://curity.io/resources/code-examples/status/)
 [![Availability](https://img.shields.io/badge/availability-source-blue)](https://curity.io/resources/code-examples/status/)
@@ -8,7 +8,7 @@ This enables a secure API solution when integrating with the OpenResty version o
 
 ## Documentation
 
-This repository is documented in the [OpenResty API Gateway Integration](https://curity.io/resources/learn/openresty-integration/) article on the Curity Web Site.
+This repository is documented in the [LUA API Gateway Integration](https://curity.io/resources/learn/lua-nginx-integration/) article on the Curity Web Site.
 
 ## More Information
 
