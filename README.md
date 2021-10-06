@@ -4,7 +4,39 @@
 [![Availability](https://img.shields.io/badge/availability-source-blue)](https://curity.io/resources/code-examples/status/)
 
 A plugin to demonstrate how to implement the [Phantom Token Pattern](https://curity.io/resources/learn/phantom-token-pattern/) via LUA.\
-This enables the pattern to be used with OpenResty or NGINX systems using the [NGINX LUA module](https://www.nginx.com/resources/wiki/modules/lua/).
+This enables integration with OpenResty or NGINX systems that use the [NGINX LUA module](https://www.nginx.com/resources/wiki/modules/lua/).
+
+## NGINX Setup
+
+Introspection results are cached using [ngx.share.DICT](https://github.com/openresty/lua-nginx-module#ngxshareddict) so first use the following NGINX directive:
+
+```nginx
+http {
+    lua_shared_dict phantom-token 10m;
+    server {
+    }
+}
+```
+
+Then apply the plugin to one or more locations with configuration similar to the following:
+
+```nginx
+location ~ ^/ {
+
+    rewrite_by_lua_block {
+
+        local config = {
+            introspection_endpoint = 'https://login.example.com:8443/oauth/v2/oauth-introspect',
+            client_id = 'introspect-client',
+            client_secret = 'Password1',
+            cache_name = 'phantom-token',
+            time_to_live_seconds = 900
+        }
+
+        local phantomTokenPlugin = require 'phantom-token-plugin'
+        phantomTokenPlugin.execute(config)
+    }
+}
 
 ## Documentation
 
