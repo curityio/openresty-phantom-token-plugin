@@ -26,7 +26,7 @@ location ~ ^/ {
     rewrite_by_lua_block {
 
         local config = {
-            introspection_endpoint = 'https://login.example.com:8443/oauth/v2/oauth-introspect',
+            introspection_endpoint = 'https://login.example.com/oauth/v2/oauth-introspect',
             client_id = 'introspect-client',
             client_secret = 'Password1',
             cache_name = 'phantom-token',
@@ -36,6 +36,8 @@ location ~ ^/ {
         local phantomTokenPlugin = require 'phantom-token-plugin'
         phantomTokenPlugin.execute(config)
     }
+
+    proxy_pass https://myapiserver:3000;
 }
 ```
 

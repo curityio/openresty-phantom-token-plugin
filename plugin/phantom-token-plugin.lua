@@ -5,12 +5,12 @@
 local _M = {}
 local http = require "resty.http"
 local jwt = require 'resty.jwt'
-local pl_stringx = require "pl.stringx"
+local str = require 'resty.string'
 
 --
 -- Return errors due to invalid tokens or introspection technical problems
 --
-local function error_response(status, code, message)
+local function error_response(status, code, message, config)
 
     local jsonData = '{"code":"' .. code .. '", "message":"' .. message .. '"}'
     ngx.status = status
@@ -18,7 +18,7 @@ local function error_response(status, code, message)
 
     if config.trusted_web_origins then
 
-        local origin = ngx.req.get_headers()["origin"]
+        local origin = ngx.req.get_headers()['origin']
         if origin and array_has_value(config.trusted_web_origins, origin) then
             ngx.header['Access-Control-Allow-Origin'] = origin
             ngx.header['Access-Control-Allow-Credentials'] = 'true'
@@ -32,8 +32,8 @@ end
 --
 -- Return a generic message for all three of these error categories
 --
-local function invalid_token_error_response(config)
-    error_response(ngx.HTTP_UNAUTHORIZED, "unauthorized", "Missing, invalid or expired access token", config)
+local function unauthorized_error_response(config)
+    error_response(ngx.HTTP_UNAUTHORIZED, 'unauthorized', 'Missing, invalid or expired access token', config)
 end
 
 --
@@ -42,25 +42,25 @@ end
 local function introspect_access_token(access_token, config)
 
     local httpc = http:new()
-    local introspectCredentials = ngx.encode_base64(config.client_id .. ":" .. config.client_secret)
+    local introspectCredentials = ngx.encode_base64(config.client_id .. ':' .. config.client_secret)
     local result, error = httpc:request_uri(config.introspection_endpoint, {
-        method = "POST",
-        body = "token=" .. access_token,
+        method = 'POST',
+        body = 'token=' .. access_token,
         headers = { 
-            ["authorization"] = "Basic " .. introspectCredentials,
-            ["content-type"] = "application/x-www-form-urlencoded",
-            ["accept"] = "application/jwt"
+            ['authorization'] = 'Basic ' .. introspectCredentials,
+            ['content-type'] = 'application/x-www-form-urlencoded',
+            ['accept'] = 'application/jwt'
         }
     })
 
     if error then
-        local connectionMessage = "A technical problem occurred during access token introspection"
+        local connectionMessage = 'A technical problem occurred during access token introspection'
         ngx.log(ngx.WARN, connectionMessage .. error)
-        return { status = 0 }
+        return { status = 500 }
     end
 
     if not result then
-        return { status = 0 }
+        return { status = 500 }
     end
 
     if result.status ~= 200 then
@@ -102,28 +102,32 @@ end
 --
 function _M.execute(config)
 
-    if ngx.req.get_method() == "OPTIONS" then
+    if ngx.req.get_method() == 'OPTIONS' then
         return
     end
 
-    local access_token = ngx.req.get_headers()["Authorization"]
-    if access_token then
-        access_token = pl_stringx.replace(access_token, "Bearer ", "", 1)
-    end
+    local auth_header = ngx.req.get_headers()['Authorization']
+    if auth_header and string.len(auth_header) > 7 and string.lower(string.sub(auth_header, 1, 7)) == 'bearer ' then
 
-    if not access_token then
-        ngx.log(ngx.WARN, "No access token was found in the HTTP Authorization header")
-        invalid_token_error_response(config)
-    end
+        local access_token = string.sub(auth_header, 8)
+        local result = verify_access_token(access_token, config)
 
-    local result = verify_access_token(access_token, config)
-    if result.status == 204 then
-        ngx.log(ngx.WARN, "Received a " .. result.status .. " introspection response due to the access token being invalid or expired")
-        invalid_token_error_response(config)
+        if result.status == 500 then
+            error_response(ngx.HTTP_INTERNAL_SERVER_ERROR, 'server_error', 'Problem encountered authorizing the HTTP request', config)
+        end
+
+        if result.status ~= 200 then
+            ngx.log(ngx.WARN, 'Received a ' .. result.status .. ' introspection response due to the access token being invalid or expired')
+            unauthorized_error_response(config)
+        end
+    else
+
+        ngx.log(ngx.WARN, 'No valid access token was found in the HTTP Authorization header')
+        unauthorized_error_response(config)
     end
 
     local jwt = result.body
-    ngx.req.set_header("Authorization", "Bearer " .. jwt)
+    ngx.req.set_header('Authorization', 'Bearer ' .. jwt)
 end
 
 return _M
