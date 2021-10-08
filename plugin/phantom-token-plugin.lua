@@ -120,14 +120,14 @@ function _M.execute(config)
             ngx.log(ngx.WARN, 'Received a ' .. result.status .. ' introspection response due to the access token being invalid or expired')
             unauthorized_error_response(config)
         end
+
+        local jwt = result.body
+        ngx.req.set_header('Authorization', 'Bearer ' .. jwt)
     else
 
         ngx.log(ngx.WARN, 'No valid access token was found in the HTTP Authorization header')
         unauthorized_error_response(config)
     end
-
-    local jwt = result.body
-    ngx.req.set_header('Authorization', 'Bearer ' .. jwt)
 end
 
 return _M
