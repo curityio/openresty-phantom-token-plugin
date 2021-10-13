@@ -67,7 +67,19 @@ local function introspect_access_token(access_token, config)
         return { status = result.status }
     end
 
-    return { status = result.status, body = result.body }
+    -- Get the time to cache from the cache-control header's max-age value
+    local expiry = 0
+    if result.headers then
+        local cacheHeader = result.headers['cache-control']
+        if cacheHeader then
+            local _, _, expiryMatch = string.find(cacheHeader, "max.-age=(%d+)")
+            if expiryMatch then
+                expiry = tonumber(expiryMatch)
+            end
+        end
+    end
+
+    return { status = result.status, jwt = result.body, expiry = expiry }
 end
 
 --
@@ -86,12 +98,17 @@ local function verify_access_token(access_token, config)
     local result = introspect_access_token(access_token, config)
     if result.status == 200 then
         
+        local time_to_live = config.time_to_live_seconds
+        if result.expiry > 0 and result.expiry < config.time_to_live_seconds then
+            time_to_live = result.expiry
+        end
+
         -- Cache the result so that introspection is efficient under load
         -- The opaque access token is already a unique string similar to a GUID so use it as a cache key
         -- The cache is atomic and thread safe so is safe to use across concurrent requests
         -- The expiry value is a number of seconds from the current time
         -- https://github.com/openresty/lua-nginx-module#ngxshareddictset
-        dict:set(access_token, result.body, config.time_to_live_seconds)
+        dict:set(access_token, result.body, time_to_live)
     end
 
     return result
@@ -121,8 +138,7 @@ function _M.execute(config)
             unauthorized_error_response(config)
         end
 
-        local jwt = result.body
-        ngx.req.set_header('Authorization', 'Bearer ' .. jwt)
+        ngx.req.set_header('Authorization', 'Bearer ' .. result.jwt)
     else
 
         ngx.log(ngx.WARN, 'No valid access token was found in the HTTP Authorization header')
