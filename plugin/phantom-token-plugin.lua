@@ -92,7 +92,7 @@ local function verify_access_token(access_token, config)
     local dict = ngx.shared[config.cache_name]
     local existing_jwt = dict:get(access_token)
     if existing_jwt then
-        return { status = 200, body = existing_jwt }
+        return { status = 200, jwt = existing_jwt }
     end
 
     -- Otherwise introspect the opaque access token
@@ -109,7 +109,7 @@ local function verify_access_token(access_token, config)
         -- The cache is atomic and thread safe so is safe to use across concurrent requests
         -- The expiry value is a number of seconds from the current time
         -- https://github.com/openresty/lua-nginx-module#ngxshareddictset
-        dict:set(access_token, result.body, time_to_live)
+        dict:set(access_token, result.jwt, time_to_live)
     end
 
     return result
@@ -129,7 +129,7 @@ function _M.execute(config)
 
         local access_token = string.sub(auth_header, 8)
         local result = verify_access_token(access_token, config)
-
+    
         if result.status == 500 then
             error_response(ngx.HTTP_INTERNAL_SERVER_ERROR, 'server_error', 'Problem encountered authorizing the HTTP request', config)
         end
