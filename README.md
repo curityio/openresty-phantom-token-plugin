@@ -40,6 +40,21 @@ location ~ ^/ {
     proxy_pass https://myapiserver:3000;
 }
 ```
+### Configuration Parameters
+
+`introspection_endpoint`: The path to the Curity Identity Server's introspection endpoint; **REQUIRED**
+
+`client_id`: The ID of the introspection client configured in the Curity Identity Server; **REQUIRED**
+
+`client_secret`: The secret of the introspection client configured in the Curity Identity Server; **REQUIRED**
+
+`cache_name`: The name of the LUA shared dictionary in which introspection results are cached; **REQUIRED**
+
+`time_to_live_seconds`: The maximum time for which each result is cached; **REQUIRED**
+
+`verify_ssl`: Whether or not the server certificate presented by the Identity Server should be validated or not. If set to true, you also have to specify the trusted CA certificates in the `lua_ssl_trusted_certificate` directive. See [https://github.com/ledgetech/lua-resty-http#request_uri](lua_resty_http) for the details. Default `true`; **OPTIONAL** 
+
+`trusted_web_origins`: For browser clients, trusted origins can be configured, so that phantom token plugin error responses include CORS headers to enable Javascript to read the response; **OPTIONAL**
 
 ## Documentation
 
