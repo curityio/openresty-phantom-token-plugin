@@ -27,7 +27,7 @@ location ~ ^/ {
 
         local config = {
             introspection_endpoint = 'https://login.example.com/oauth/v2/oauth-introspect',
-            client_id = 'introspect-client',
+            client_id = 'introspection-client',
             client_secret = 'Password1',
             cache_name = 'phantom-token',
             time_to_live_seconds = 900
@@ -42,19 +42,16 @@ location ~ ^/ {
 ```
 ### Configuration Parameters
 
-`introspection_endpoint`: The path to the Curity Identity Server's introspection endpoint; **REQUIRED**
-
-`client_id`: The ID of the introspection client configured in the Curity Identity Server; **REQUIRED**
-
-`client_secret`: The secret of the introspection client configured in the Curity Identity Server; **REQUIRED**
-
-`cache_name`: The name of the LUA shared dictionary in which introspection results are cached; **REQUIRED**
-
-`time_to_live_seconds`: The maximum time for which each result is cached; **REQUIRED**
-
-`verify_ssl`: Whether or not the server certificate presented by the Identity Server should be validated or not. If set to true, you also have to specify the trusted CA certificates in the `lua_ssl_trusted_certificate` directive. See [https://github.com/ledgetech/lua-resty-http#request_uri](lua_resty_http) for the details. Default `true`; **OPTIONAL** 
-
-`trusted_web_origins`: For browser clients, trusted origins can be configured, so that phantom token plugin error responses include CORS headers to enable Javascript to read the response; **OPTIONAL**
+| Parameter | Required? | Details |
+| --------- | --------- | ------- |
+| introspection_endpoint | Yes | The path to the Curity Identity Server's introspection endpoint |
+| client_id | Yes | The ID of the introspection client configured in the Curity Identity Server |
+| client_secret | Yes | The secret of the introspection client configured in the Curity Identity Server |
+| cache_name | Yes | The name of the LUA shared dictionary in which introspection results are cached |
+| time_to_live_seconds | Yes | The maximum time for which each result is cached |
+| scope | No | One or more scopes can be required for the location, such as `read write` |
+| trusted_web_origins | No | For browser clients, trusted origins can be configured, so that plugin error responses are readable by Javascript code running in browsers |
+| verify_ssl | No | An override that can be set to `false` if using untrusted server certificates in the Curity Identity Server. Alternatively you can specify trusted CA certificates via the `lua_ssl_trusted_certificate` directive. See [lua_resty_http](https://github.com/ledgetech/lua-resty-http#request_uri) for further details. |
 
 ## Documentation
 

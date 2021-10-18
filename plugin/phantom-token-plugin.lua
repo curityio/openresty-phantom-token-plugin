@@ -8,6 +8,36 @@ local jwt = require 'resty.jwt'
 local str = require 'resty.string'
 
 --
+-- Get values into an array that can be iterated multiple times
+--
+local function iterator_to_array(iterator)
+    
+    local i = 1;
+    local array = {};
+
+    for item in iterator do
+      array[i] = item;
+      i = i + 1
+    end
+
+    return array
+end
+
+--
+-- A utility for finding an item in an array
+--
+local function array_has_value(arr, val)
+
+    for _, item in ipairs(arr) do
+        if val == item then
+            return true
+        end
+    end
+
+    return false
+end
+
+--
 -- Return errors due to invalid tokens or introspection technical problems
 --
 local function error_response(status, code, message, config)
@@ -35,7 +65,6 @@ end
 local function unauthorized_error_response(config)
     error_response(ngx.HTTP_UNAUTHORIZED, 'unauthorized', 'Missing, invalid or expired access token', config)
 end
-
 --
 -- Introspect the access token
 --
@@ -55,7 +84,7 @@ local function introspect_access_token(access_token, config)
     })
 
     if error then
-        local connectionMessage = 'A technical problem occurred during access token introspection'
+        local connectionMessage = 'A technical problem occurred during access token introspection: '
         ngx.log(ngx.WARN, connectionMessage .. error)
         return { status = 500 }
     end
@@ -84,6 +113,42 @@ local function introspect_access_token(access_token, config)
 end
 
 --
+-- Optionally check scopes configured for a location
+--
+local function verify_scope(jwt_text, required_scope)
+    
+    if required_scope == nil then
+        return true
+    end
+
+    local data = jwt:load_jwt(jwt_text, nil)
+    if not data.valid then
+        local details = 'Unable to parse JWT access token'
+        if data.reason then
+            details = details .. ': ' .. data.reason
+        end
+        ngx.log(ngx.WARN, details)
+        return false
+    end
+
+    if not data.payload.scope then
+        return false
+    end
+
+    local required_scope_parts = string.gmatch(required_scope, "%S+")
+    local actual_scope_parts   = iterator_to_array(string.gmatch(data.payload.scope, "%S+"))
+
+    for required_value in required_scope_parts do
+        if not array_has_value(actual_scope_parts, required_value) then
+            ngx.log(ngx.WARN, 'The required scope ' .. required_value .. ' was not found in the received access token')
+            return false
+        end
+    end
+
+    return true
+end
+
+--
 -- Get the token from the cache or introspect it
 --
 local function verify_access_token(access_token, config)
@@ -98,7 +163,11 @@ local function verify_access_token(access_token, config)
     -- Otherwise introspect the opaque access token
     local result = introspect_access_token(access_token, config)
     if result.status == 200 then
-        
+
+        if not verify_scope(result.jwt, config.scope) then
+            return { status = 403 }
+        end
+
         local time_to_live = config.time_to_live_seconds
         if result.expiry > 0 and result.expiry < config.time_to_live_seconds then
             time_to_live = result.expiry
@@ -132,6 +201,10 @@ function _M.execute(config)
     
         if result.status == 500 then
             error_response(ngx.HTTP_INTERNAL_SERVER_ERROR, 'server_error', 'Problem encountered authorizing the HTTP request', config)
+        end
+
+        if result.status == 403 then
+            error_response(ngx.HTTP_FORBIDDEN, 'forbidden', 'The token does not contain the required scope', config)
         end
 
         if result.status ~= 200 then
