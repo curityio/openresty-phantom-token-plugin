@@ -1,8 +1,8 @@
 package = "lua-resty-phantom-token"
-version = "1.0.1-1"
+version = "1.0.0-1"
 source = {
-  url = "git://github.com/curityio/nginx-lua-phantom-token-plugin",
-  tag = "v1.0.1"
+  url = "git://github.com/curityio/lua-nginx-phantom-token-plugin",
+  tag = "v1.0.0"
 }
 description = {
   summary = "A Lua plugin used during API requests to exchange an opaque reference token for a JWT access token",

@@ -44,7 +44,7 @@ location ~ ^/ {
             time_to_live_seconds = 900
         }
 
-        local phantomTokenPlugin = require 'phantom-token-plugin'
+        local phantomTokenPlugin = require 'resty.phantom-token'
         phantomTokenPlugin.execute(config)
     }
 
