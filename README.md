@@ -6,7 +6,7 @@
 A plugin to demonstrate how to implement the [Phantom Token Pattern](https://curity.io/resources/learn/phantom-token-pattern/) via Lua.\
 This enables integration with OpenResty or NGINX systems that use the [NGINX Lua module](https://www.nginx.com/resources/wiki/modules/lua/).
 
-## Installation
+## Plugin Installation
 
 If you are using luarocks, execute the following command to install the plugin:
 
@@ -16,7 +16,7 @@ luarocks install lua-resty-phantom-token
 
 Or copy the `phantom-token-plugin.lua` file into a directory called `resty` within your `lua_package_path`.
 
-## NGINX Configuration
+## Plugin Configuration
 
 Introspection results are cached using [ngx.share.DICT](https://github.com/openresty/lua-nginx-module#ngxshareddict) so first use the following NGINX directive:
 
