@@ -1,5 +1,5 @@
 --
--- A LUA module to handle swapping opaque access tokens for JWTs
+-- A Lua module to handle swapping opaque access tokens for JWTs
 --
 
 local _M = {}
