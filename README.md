@@ -14,7 +14,7 @@ If you are using luarocks, execute the following command to install the plugin:
 luarocks install lua-resty-phantom-token
 ```
 
-Or copy `phantom-token-plugin.lua` file into s directory called `resty` within your `lua_package_path`.
+Or copy the `phantom-token-plugin.lua` file into a directory called `resty` within your `lua_package_path`.
 
 ## NGINX Configuration
 
@@ -24,6 +24,7 @@ Introspection results are cached using [ngx.share.DICT](https://github.com/openr
 http {
     lua_shared_dict phantom-token 10m;
     server {
+        ...
     }
 }
 ```
@@ -66,7 +67,7 @@ location ~ ^/ {
 
 ## Documentation
 
-See the [NGINX Lua Integration](https://curity.io/resources/learn/lua-nginx-integration/) article on the Curity Web Site.
+See the [OpenResty Integration](https://curity.io/resources/learn/integration-openresty/) article on the Curity Web Site.
 
 ## More Information
 
