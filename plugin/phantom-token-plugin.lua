@@ -5,7 +5,6 @@
 local _M = {}
 local http = require "resty.http"
 local jwt = require 'resty.jwt'
-local str = require 'resty.string'
 
 --
 -- Get values into an array that can be iterated multiple times
