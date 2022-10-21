@@ -1,4 +1,4 @@
-# NGINX Lua Phantom Token Plugin
+# OpenResty Phantom Token Plugin
 
 [![Quality](https://img.shields.io/badge/quality-experiment-red)](https://curity.io/resources/code-examples/status/)
 [![Availability](https://img.shields.io/badge/availability-source-blue)](https://curity.io/resources/code-examples/status/)
